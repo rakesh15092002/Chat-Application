@@ -1,37 +1,42 @@
 import React, { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getMessages } from "../redux/thunks/userChatThunks"; // Assuming this gets messages
+import { getMessages } from "../redux/thunks/userChatThunks";
 import ChatHeader from "./ChatHeader";
 import MessageInput from "./MessageInput";
 import MessageSkeleton from "./skeletons/MessageSkeleton";
 import { formatMessageTime } from "../lib/utils";
-import { setSelectedUser } from "../redux/slices/userChatSlice";
 
 const ChatContainer = () => {
   const dispatch = useDispatch();
   const messageEndRef = useRef(null);
 
-  // Access authUser from Redux state
-  const { authenticatedData: authUser, isAuthenticated } = useSelector((state) => state.user);
+  const { authenticatedData: authUser, isAuthenticated } = useSelector(
+    (state) => state.user
+  );
+  const { isMessageLoading, selectedUser, messages } = useSelector(
+    (state) => state.userChat
+  );
 
-  // Access selected user and messages from Redux state
-  const { isMessageLoading, selectedUser, messages } = useSelector((state) => state.userChat);
-
-  // Get messages when selectedUser changes
+  // Always call hooks first!
   useEffect(() => {
     if (selectedUser && selectedUser._id) {
       dispatch(getMessages(selectedUser._id));
-    } else {
-      console.error("Selected user is invalid:", selectedUser);
     }
   }, [dispatch, selectedUser]);
 
-  // Scroll to the newest message when messages change
   useEffect(() => {
     if (messageEndRef.current && messages) {
       messageEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
+
+  if (!selectedUser || !selectedUser._id) {
+    return (
+      <div className="flex-1 flex items-center justify-center text-gray-500">
+        Please select a user to start chatting.
+      </div>
+    );
+  }
 
   if (isMessageLoading) {
     return (
@@ -50,10 +55,12 @@ const ChatContainer = () => {
         {messages && messages.length === 0 && (
           <div className="text-center text-gray-500">No messages yet.</div>
         )}
-        {messages?.map((message) => (
+        {[...messages].reverse().map((message) => (
           <div
             key={message._id}
-            className={`chat ${message.senderId === authUser._id ? "chat-end" : "chat-start"}`}
+            className={`chat ${
+              message.senderId === authUser._id ? "chat-end" : "chat-start"
+            }`}
           >
             <div className="chat-image avatar">
               <div className="size-10 rounded-full border">
@@ -85,7 +92,7 @@ const ChatContainer = () => {
           </div>
         ))}
       </div>
-      <div ref={messageEndRef} /> {/* This is the end for scrolling */}
+      <div ref={messageEndRef} />
       <MessageInput />
     </div>
   );

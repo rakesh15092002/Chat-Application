@@ -33,20 +33,19 @@ export const getMessages = createAsyncThunk(
   }
 );
 
-// Rename this to match the import
 export const sendMessages = createAsyncThunk(
   'userChat/sendMessage',
-  async ({ text, image }, thunkAPI) => {
+  async ({ text, image, receiverId }, thunkAPI) => {
     try {
       const response = await axios.post(
-        `http://localhost:5002/api/message/send`,
+        `http://localhost:5002/api/message/send/${receiverId}`, // Including receiverId in the URL
         { text, image },
         { withCredentials: true }
       );
-      return response.data;
+      return response.data; // Return the data from API response
     } catch (error) {
       return thunkAPI.rejectWithValue(
-        error.response?.data?.message || "Send message failed"
+        error.response?.data?.message || 'Send message failed'
       );
     }
   }

@@ -17,13 +17,17 @@ const userChatSlice = createSlice({
   initialState,
   reducers: {
     setSelectedUser: (state, action) => {
-      if (action.payload && action.payload._id) {
+      if (action.payload === null) {
+        state.selectedUserId = null;
+        state.selectedUser = null;
+      } else if (action.payload && action.payload._id) {
         state.selectedUserId = action.payload._id;
         state.selectedUser = action.payload;
       } else {
         console.error("Invalid payload in setSelectedUser:", action.payload);
       }
     },
+    
   },
   extraReducers: (builder) => {
     builder

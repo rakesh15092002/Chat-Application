@@ -1,49 +1,51 @@
 import { useRef, useState } from "react";
-import { useDispatch } from "react-redux"; // Assuming you use Redux
-import  sendMessage  from "../redux/slices/userChatSlice"; // Replace with actual path
-import { Image, Send, X } from "lucide-react";
-
+import { useDispatch, useSelector } from "react-redux"; 
+import { sendMessages } from "../redux/thunks/userChatThunks"; // Correct import
+import { Image, Send, X } from "lucide-react"; // Assuming you're using lucide icons
 
 const MessageInput = () => {
-  const [text, setText] = useState("");
-  const [imagePreview, setImagePreview] = useState(null);
-  const fileInputRef = useRef(null);
-  const dispatch = useDispatch(); // Using Redux dispatch
+  const { selectedUser } = useSelector((state) => state.userChat); // Get selectedUser from Redux
+  const [text, setText] = useState(""); // For text input
+  const [imagePreview, setImagePreview] = useState(null); // For image preview
+  const fileInputRef = useRef(null); // To trigger file input click
+  const dispatch = useDispatch(); // Redux dispatch
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (!file?.type.startsWith("image/")) {
-      // toast.error("Please select an image file");
+      // If it's not an image, do nothing
       return;
     }
 
     const reader = new FileReader();
     reader.onloadend = () => {
-      setImagePreview(reader.result);
+      setImagePreview(reader.result); // Set the image preview URL
     };
     reader.readAsDataURL(file);
   };
 
   const removeImage = () => {
     setImagePreview(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    if (fileInputRef.current) fileInputRef.current.value = ""; // Clear file input
   };
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!text.trim() && !imagePreview) return;
+    if (!text.trim() && !imagePreview) return; // Do not send empty messages
 
     try {
-      // Dispatch the sendMessage action here
-      await dispatch(sendMessage({ text: text.trim(), image: imagePreview }));
+      // Get the selectedUserId from selectedUser
+      const receiverId = selectedUser._id;
 
-      // Clear form after sending
+      // Dispatch sendMessages thunk with receiverId
+      await dispatch(sendMessages({ text: text.trim(), image: imagePreview, receiverId }));
+
+      // Reset input fields after sending the message
       setText("");
       setImagePreview(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (error) {
       console.error("Failed to send message:", error);
-      toast.error("Failed to send message");
     }
   };
 
@@ -59,8 +61,7 @@ const MessageInput = () => {
             />
             <button
               onClick={removeImage}
-              className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-base-300
-              flex items-center justify-center"
+              className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-base-300 flex items-center justify-center"
               type="button"
             >
               <X size={14} />
@@ -88,8 +89,7 @@ const MessageInput = () => {
 
           <button
             type="button"
-            className={`hidden sm:flex btn btn-circle
-                     ${imagePreview ? "text-emerald-500" : "text-zinc-400"}`}
+            className={`hidden sm:flex btn btn-circle ${imagePreview ? "text-emerald-500" : "text-zinc-400"}`}
             onClick={() => fileInputRef.current?.click()}
           >
             <Image size={20} />
