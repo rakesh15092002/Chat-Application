@@ -7,15 +7,19 @@ const initialState = {
   status: null,
   error: null,
   loading: false,
-  authenticatedData: null,  // Changed from false to null
+  authenticatedData: null,
   isUpdatingProfile: false,
-  onlineUsers:[]
+  onlineUsers: [],
 };
 
 const userSlice = createSlice({
   name: 'user',
   initialState,
-  reducers: {},
+  reducers: {
+    setOnlineUsers: (state, action) => {
+      state.onlineUsers = action.payload;
+    },
+  },
   extraReducers: (builder) => {
     builder
       // Register
@@ -54,7 +58,7 @@ const userSlice = createSlice({
         state.authenticatedData = null;
       })
 
-      // Auth check
+      // Auth Check
       .addCase(authUser.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -90,4 +94,5 @@ const userSlice = createSlice({
   },
 });
 
+export const { setOnlineUsers } = userSlice.actions;
 export default userSlice.reducer;

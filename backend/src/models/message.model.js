@@ -1,6 +1,19 @@
 import mongoose from "mongoose";
 
-const messageSchema = new mongoose.Schema(
+const fileSchema = new mongoose.Schema(
+  {
+    url: String,
+    name: String,
+    type: String,
+    size: String,
+    caption: String,
+    uploadedAt: {
+      type: Date,
+      default: Date.now
+    }
+  }, { _id: false })
+
+const chatSchema = new mongoose.Schema(
   {
     senderId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -12,12 +25,22 @@ const messageSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    messageType: {
+      type: String
+    },
     text: {
-      type: String,
+      type: String
     },
-    image: {
-      type: String,
-    },
+    files: [fileSchema],
+    timeStamp: {
+      type: Date,
+      default: Date.now,
+    }
+  }, { _id: false })
+
+const messageSchema = new mongoose.Schema(
+  {
+    messages: [chatSchema],
   },
   { timestamps: true }
 );

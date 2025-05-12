@@ -4,9 +4,9 @@ import User from "../models/user.model.js";
 import bcrypt from "bcrypt";
 
 export const signup = async (req, res) => {
-  console.log(req.body)
+  
   const { fullName, email, password } = req.body;
-  console.log("hello")
+  
   try {
     if (!fullName || !email || !password) {
       return res.status(400).json({ message: "All fields are required" });
@@ -106,7 +106,7 @@ export const updateProfile = async (req, res) => {
     }
 
     const uploadResponse = await cloudinary.uploader.upload(profilePic);
-    console.log("Cloudinary URL:", uploadResponse.secure_url);
+    // console.log("Cloudinary URL:", uploadResponse.secure_url);
 
     const updatedUser = await User.findByIdAndUpdate(
       userId,
@@ -128,7 +128,7 @@ export const updateProfile = async (req, res) => {
 };
 
 
-export const cheakAuth = (req, res) => {
+export const checkAuth = (req, res) => {
   try {
     
     res.status(200).json(req.user);

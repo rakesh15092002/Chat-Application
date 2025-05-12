@@ -35,14 +35,19 @@ export const getMessages = createAsyncThunk(
 
 export const sendMessages = createAsyncThunk(
   'userChat/sendMessage',
-  async ({ text, image, receiverId }, thunkAPI) => {
+  async ({ receiverId, formData }, thunkAPI) => {
     try {
       const response = await axios.post(
-        `http://localhost:5002/api/message/send/${receiverId}`, // Including receiverId in the URL
-        { text, image },
-        { withCredentials: true }
+        `http://localhost:5002/api/message/send/${receiverId}`,
+        formData,
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
       );
-      return response.data; // Return the data from API response
+      return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(
         error.response?.data?.message || 'Send message failed'
@@ -50,3 +55,4 @@ export const sendMessages = createAsyncThunk(
     }
   }
 );
+

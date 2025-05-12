@@ -1,72 +1,74 @@
 import { useRef, useState } from "react";
-import { useDispatch, useSelector } from "react-redux"; 
-import { sendMessages } from "../redux/thunks/userChatThunks"; // Correct import
-import { Image, Send, X } from "lucide-react"; // Assuming you're using lucide icons
+import { useDispatch, useSelector } from "react-redux";
+import { sendMessages } from "../redux/thunks/userChatThunks";
+import { Image, Send, X } from "lucide-react";
 
 const MessageInput = () => {
-  const { selectedUser } = useSelector((state) => state.userChat); // Get selectedUser from Redux
-  const [text, setText] = useState(""); // For text input
-  const [imagePreview, setImagePreview] = useState(null); // For image preview
-  const fileInputRef = useRef(null); // To trigger file input click
-  const dispatch = useDispatch(); // Redux dispatch
+  const { selectedUser } = useSelector((state) => state.userChat);
+  const [text, setText] = useState("");
+  const [filePreviews, setFilePreviews] = useState([]);
+  const fileInputRef = useRef(null);
+  const dispatch = useDispatch();
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (!file?.type.startsWith("image/")) {
-      // If it's not an image, do nothing
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagePreview(reader.result); // Set the image preview URL
-    };
-    reader.readAsDataURL(file);
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    const previews = files.map((file) => ({
+      file,
+      url: URL.createObjectURL(file),
+    }));
+    setFilePreviews((prev) => [...prev, ...previews]);
   };
 
-  const removeImage = () => {
-    setImagePreview(null);
-    if (fileInputRef.current) fileInputRef.current.value = ""; // Clear file input
+  const removeFile = (indexToRemove) => {
+    setFilePreviews((prev) => prev.filter((_, i) => i !== indexToRemove));
+    if (fileInputRef.current && filePreviews.length === 1) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!text.trim() && !imagePreview) return; // Do not send empty messages
+    if (!text.trim() && filePreviews.length === 0) return;
+
+    const formData = new FormData();
+    if (text.trim()) formData.append("text", text.trim());
+
+    formData.append("messageType", filePreviews.length > 0 ? "file" : "text");
+
+    filePreviews.forEach(({ file }) => {
+      formData.append("files", file);
+    });
 
     try {
-      // Get the selectedUserId from selectedUser
-      const receiverId = selectedUser._id;
-
-      // Dispatch sendMessages thunk with receiverId
-      await dispatch(sendMessages({ text: text.trim(), image: imagePreview, receiverId }));
-
-      // Reset input fields after sending the message
+      await dispatch(sendMessages({ receiverId: selectedUser._id, formData }));
       setText("");
-      setImagePreview(null);
+      setFilePreviews([]);
       if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (error) {
-      console.error("Failed to send message:", error);
+      console.error("Send message failed:", error);
     }
   };
 
   return (
     <div className="p-4 w-full">
-      {imagePreview && (
-        <div className="mb-3 flex items-center gap-2">
-          <div className="relative">
-            <img
-              src={imagePreview}
-              alt="Preview"
-              className="w-20 h-20 object-cover rounded-lg border border-zinc-700"
-            />
-            <button
-              onClick={removeImage}
-              className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-base-300 flex items-center justify-center"
-              type="button"
-            >
-              <X size={14} />
-            </button>
-          </div>
+      {filePreviews.length > 0 && (
+        <div className="mb-3 flex gap-2 flex-wrap">
+          {filePreviews.map((preview, idx) => (
+            <div key={idx} className="relative">
+              <img
+                src={preview.url}
+                alt="Preview"
+                className="w-20 h-20 object-cover rounded-lg border border-zinc-700"
+              />
+              <button
+                onClick={() => removeFile(idx)}
+                className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-base-300 flex items-center justify-center"
+                type="button"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          ))}
         </div>
       )}
 
@@ -79,26 +81,29 @@ const MessageInput = () => {
             value={text}
             onChange={(e) => setText(e.target.value)}
           />
+
           <input
             type="file"
             accept="image/*"
             className="hidden"
             ref={fileInputRef}
-            onChange={handleImageChange}
+            onChange={handleFileChange}
+            multiple
           />
 
           <button
             type="button"
-            className={`hidden sm:flex btn btn-circle ${imagePreview ? "text-emerald-500" : "text-zinc-400"}`}
+            className={`hidden sm:flex btn btn-circle ${filePreviews.length ? "text-emerald-500" : "text-zinc-400"}`}
             onClick={() => fileInputRef.current?.click()}
           >
             <Image size={20} />
           </button>
         </div>
+
         <button
           type="submit"
           className="btn btn-sm btn-circle"
-          disabled={!text.trim() && !imagePreview}
+          disabled={!text.trim() && filePreviews.length === 0}
         >
           <Send size={22} />
         </button>

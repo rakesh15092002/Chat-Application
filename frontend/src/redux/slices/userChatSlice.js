@@ -27,7 +27,7 @@ const userChatSlice = createSlice({
         console.error("Invalid payload in setSelectedUser:", action.payload);
       }
     },
-    
+
   },
   extraReducers: (builder) => {
     builder
@@ -49,6 +49,7 @@ const userChatSlice = createSlice({
         state.error = null;
       })
       .addCase(getMessages.fulfilled, (state, action) => {
+        // console.log("Fetched messages:", action.payload); // debug line
         state.messages = action.payload;
         state.isMessageLoading = false;
       })
@@ -61,8 +62,10 @@ const userChatSlice = createSlice({
         state.isSendingMessage = true; // set sending message state to true
       })
       .addCase(sendMessages.fulfilled, (state, action) => {
-        state.messages.push(action.payload); // assuming action.payload is the new message
-        state.isSendingMessage = false; // reset sending message state
+        if (action.payload) {
+          state.messages.push(action.payload); // append new message
+        }
+        state.isSendingMessage = false;
       })
       .addCase(sendMessages.rejected, (state, action) => {
         state.isSendingMessage = false; // reset sending message state

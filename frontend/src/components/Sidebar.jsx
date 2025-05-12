@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { getUsers, getMessages } from '../redux/thunks/userChatThunks';
+import { getMessages, getUsers } from '../redux/thunks/userChatThunks';
 import { setSelectedUser } from '../redux/slices/userChatSlice';
 import SidebarSkeleton from './skeletons/SidebarSkeleton';
 import { Users } from 'lucide-react';
 
+
 // Replace this with socket-based online tracking in future
-const onlineUsers = [];
+// const onlineUsers = [];
 
 const Sidebar = () => {
   const dispatch = useDispatch();
@@ -21,7 +22,8 @@ const Sidebar = () => {
 
   const handleUserClick = (user) => {
     dispatch(setSelectedUser(user)); 
-    dispatch(getMessages(user._id));
+    // console.log("getting messages")
+    dispatch(getMessages(user?._id));
   };
 
 
