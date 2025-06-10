@@ -8,7 +8,7 @@ const initialState = {
   selectedUser: null,
   isUserLoading: false,
   isMessageLoading: false,
-  isSendingMessage: false,  // added for send message loading state
+  isSendingMessage: false,
   error: null,
 };
 
@@ -17,62 +17,54 @@ const userChatSlice = createSlice({
   initialState,
   reducers: {
     setSelectedUser: (state, action) => {
-      if (action.payload === null) {
-        state.selectedUserId = null;
-        state.selectedUser = null;
-      } else if (action.payload && action.payload._id) {
-        state.selectedUserId = action.payload._id;
-        state.selectedUser = action.payload;
-      } else {
-        console.error("Invalid payload in setSelectedUser:", action.payload);
-      }
+      state.selectedUserId = action.payload?._id || null;
+      state.selectedUser = action.payload || null;
     },
-
+    addReceivedMessage: (state, action) => {
+      state.messages.push(action.payload);
+    },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(getUsers.pending, (state) => {
-        state.isUserLoading = true;
-        state.error = null;
-      })
       .addCase(getUsers.fulfilled, (state, action) => {
         state.users = action.payload;
         state.isUserLoading = false;
       })
+      .addCase(getUsers.pending, (state) => {
+        state.isUserLoading = true;
+        state.error = null;
+      })
       .addCase(getUsers.rejected, (state, action) => {
         state.isUserLoading = false;
-        state.error = action.payload || action.error.message;
+        state.error = action.payload;
       })
-
+      .addCase(getMessages.fulfilled, (state, action) => {
+        state.messages = action.payload;
+        state.isMessageLoading = false;
+      })
       .addCase(getMessages.pending, (state) => {
         state.isMessageLoading = true;
         state.error = null;
       })
-      .addCase(getMessages.fulfilled, (state, action) => {
-        // console.log("Fetched messages:", action.payload); // debug line
-        state.messages = action.payload;
-        state.isMessageLoading = false;
-      })
       .addCase(getMessages.rejected, (state, action) => {
         state.isMessageLoading = false;
-        state.error = action.payload || action.error.message;
+        state.error = action.payload;
       })
-
       .addCase(sendMessages.pending, (state) => {
-        state.isSendingMessage = true; // set sending message state to true
+        state.isSendingMessage = true;
       })
       .addCase(sendMessages.fulfilled, (state, action) => {
         if (action.payload) {
-          state.messages.push(action.payload); // append new message
+          state.messages.push(action.payload);
         }
         state.isSendingMessage = false;
       })
       .addCase(sendMessages.rejected, (state, action) => {
-        state.isSendingMessage = false; // reset sending message state
-        state.error = action.payload || action.error.message;
+        state.isSendingMessage = false;
+        state.error = action.payload;
       });
   },
 });
 
-export const { setSelectedUser } = userChatSlice.actions;
+export const { setSelectedUser, addReceivedMessage } = userChatSlice.actions;
 export default userChatSlice.reducer;

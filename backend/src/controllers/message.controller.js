@@ -1,16 +1,13 @@
+// controllers/message.controller.js
 import cloudinary from "../lib/cloudinary.js";
 import User from "../models/user.model.js";
 import Message from "../models/message.model.js";
+import { getReceiverSocketId, io } from '../lib/socket.js';
 
 export const getUsersForSidebar = async (req, res) => {
-  
   try {
     const loggedInUserId = req.user._id;
-    // console.log(`Fetching users for sidebar, excluding logged in user: ${loggedInUserId}`);
-    
     const filteredUsers = await User.find({ _id: { $ne: loggedInUserId } }).select("-password");
-    // console.log(`Fetched ${filteredUsers.length} users`);
-    
     res.status(200).json(filteredUsers);
   } catch (error) {
     console.log("Error in getUsersForSidebar: ", error.message);
@@ -23,8 +20,6 @@ export const getMessages = async (req, res) => {
     const currentUserId = req.user._id;
     const selectedUserId = req.params.id;
 
-    // console.log(`Fetching messages for conversation between user ${currentUserId} and ${selectedUserId}`);
-    
     const conversation = await Message.findOne({
       $or: [
         { "messages.senderId": currentUserId, "messages.receiverId": selectedUserId },
@@ -32,12 +27,7 @@ export const getMessages = async (req, res) => {
       ],
     });
 
-    if (!conversation) {
-      console.log("No conversation found, returning empty array.");
-      return res.status(200).json([]); // No messages yet
-    }
-
-
+    if (!conversation) return res.status(200).json([]);
     res.status(200).json(conversation.messages);
   } catch (error) {
     console.error("Error fetching messages:", error.message);
@@ -52,11 +42,7 @@ export const sendMessage = async (req, res) => {
     const senderId = req.user._id;
     let files = req.cloudinaryFiles || [];
 
-    // console.log(`Sending message from ${senderId} to ${receiverId}`);
-
-    if (files.length > 0) {
-      text = ""; // If there are files, no text is sent
-    }
+    if (files.length > 0) text = "";
 
     const newChat = {
       senderId,
@@ -67,7 +53,13 @@ export const sendMessage = async (req, res) => {
       timeStamp: new Date(),
     };
 
-    // Find existing message doc between users (order doesn't matter)
+    // 🔥 Real-time message send via socket
+    const receiverSocketId = getReceiverSocketId(receiverId);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("newMessage", newChat);
+    }
+
+    // Save to DB
     let existingConversation = await Message.findOne({
       $or: [
         { "messages.senderId": senderId, "messages.receiverId": receiverId },
@@ -76,19 +68,14 @@ export const sendMessage = async (req, res) => {
     });
 
     if (existingConversation) {
-      // console.log("Found existing conversation, pushing new message");
-      // Push to existing conversation
       existingConversation.messages.push(newChat);
       await existingConversation.save();
       res.status(200).json(newChat);
     } else {
-      // console.log("No existing conversation found, creating new conversation");
-      // Create new conversation
       const newMessageDoc = new Message({ messages: [newChat] });
       await newMessageDoc.save();
       res.status(200).json(newChat);
     }
-    
   } catch (error) {
     console.error("Error in sendMessage:", error.message);
     res.status(500).json({ error: "Internal server error" });
