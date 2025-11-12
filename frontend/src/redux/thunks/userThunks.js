@@ -3,13 +3,15 @@ import axios from "axios";
 import { connectSocket ,disconnectSocket} from "../../socket/socket";
 import { setOnlineUsers } from "../slices/userSlice";
 
+const apiUrl = import.meta.env.VITE_BACKEND_BASE_URL || 'http://localhost:5002';
+
 
 export const register = createAsyncThunk(
   'user/register',
   async (userData, thunkAPI) => {
     try {
       const response = await axios.post(
-        'http://localhost:5002/api/auth/signup',
+        `${apiUrl}/api/auth/signup`,
         userData.formData,
         { withCredentials: true }
       );
@@ -37,7 +39,7 @@ export const login = createAsyncThunk(
   async (userData, thunkAPI) => {
     try {
       const response = await axios.post(
-        'http://localhost:5002/api/auth/login',
+        `${apiUrl}/api/auth/login`,
         userData,
         {
           headers: { 'Content-Type': 'application/json' },
@@ -67,7 +69,7 @@ export const authUser = createAsyncThunk(
   async (_, thunkAPI) => {
     try {
       const response = await axios.get(
-        'http://localhost:5002/api/auth/check-auth',
+        `${apiUrl}/api/auth/check-auth`,
         { withCredentials: true }
       );
 
@@ -92,7 +94,7 @@ export const logout = createAsyncThunk(
   async (_, thunkAPI) => {
     try {
       await axios.post(
-        'http://localhost:5002/api/auth/logout',
+        `${apiUrl}/api/auth/logout`,
         {},
         { withCredentials: true }
       );
@@ -114,7 +116,7 @@ export const updateProfile = createAsyncThunk(
   async (profilePic, thunkAPI) => {
     try {
       const response = await axios.post(
-        'http://localhost:5002/api/auth/update-profile',
+        `${apiUrl}/api/auth/update-profile`,
         profilePic,
         {
           // headers: {

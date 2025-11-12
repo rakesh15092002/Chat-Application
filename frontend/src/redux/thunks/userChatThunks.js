@@ -1,9 +1,11 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
+const apiUrl = import.meta.env.VITE_BACKEND_BASE_URL || 'http://localhost:5002';
+
 export const getUsers = createAsyncThunk("userChat/getUsers", async (_, thunkAPI) => {
   try {
-    const res = await axios.get("http://localhost:5002/api/message/users", {
+    const res = await axios.get(`${apiUrl}/api/message/users`, {
       withCredentials: true,
     });
     return res.data;
@@ -14,7 +16,7 @@ export const getUsers = createAsyncThunk("userChat/getUsers", async (_, thunkAPI
 
 export const getMessages = createAsyncThunk("userChat/getMessages", async (userId, thunkAPI) => {
   try {
-    const res = await axios.get(`http://localhost:5002/api/message/${userId}`, {
+    const res = await axios.get(`${apiUrl}/api/message/${userId}`, {
       withCredentials: true,
     });
     return res.data;
@@ -28,7 +30,7 @@ export const sendMessages = createAsyncThunk(
   async ({ receiverId, formData }, thunkAPI) => {
     try {
       const res = await axios.post(
-        `http://localhost:5002/api/message/send/${receiverId}`,
+        `${apiUrl}/api/message/send/${receiverId}`,
         formData,
         {
           withCredentials: true,
