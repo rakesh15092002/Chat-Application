@@ -35,4 +35,4 @@ server.listen(PORT, () => {
   connectDB(); // Ensure DB connection is established
 });
 
-module.exports = app;
+export default app;
