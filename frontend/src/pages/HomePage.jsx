@@ -3,11 +3,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../redux/thunks/userThunks';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
-import NoChatSelected from '../components/noChatSelected';
 import ChatContainer from '../components/ChatContainer';
+import NoChatSelected from '../components/NoChatSelected';
 
 const HomePage = () => {
-  const selectedUser = useSelector((state)=>state.userChat);
+  const { selectedUser } = useSelector((state)=>state.userChat);
   
 
   return (
