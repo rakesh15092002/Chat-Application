@@ -17,10 +17,12 @@ app.use(express.urlencoded({ limit: '50mb', extended: true })); // Increased URL
 app.use(cookieParser());
 
 // CORS configuration to allow frontend requests
-app.use(cors({
-  origin: "http://localhost:5173", // Replace with your frontend URL for production
-  credentials: true, // Allow credentials (cookies)
-}));
+
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || "http://localhost:5173",
+  credentials: true,
+}
+app.use(cors(corsOptions));
 
 app.use("/api/auth", authRoutes);
 app.use('/api/message', messageRoutes);
