@@ -1,17 +1,17 @@
 import { io } from "socket.io-client";
 
-const BASE_URL = "http://localhost:5002";
+const BASE_URL = import.meta.env.VITE_BACKEND_BASE_URL; // ✅ Use env variable
 
 let socket = null;
 
 export const connectSocket = (userId) => {
   if (socket || !userId) return;
 
-  socket = io(BASE_URL); // No need for query
+  socket = io(BASE_URL); // Connects to deployed backend
 
   socket.on("connect", () => {
     console.log("Socket connected:", socket.id);
-    socket.emit("register", userId); // ✅ Send userId to server
+    socket.emit("register", userId); // Send userId to server
   });
 
   return socket;
