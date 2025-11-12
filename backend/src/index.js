@@ -25,6 +25,10 @@ app.use(cors({
 app.use("/api/auth", authRoutes);
 app.use('/api/message', messageRoutes);
 
+app.get('/', (req, res) => {
+  res.send('Chat Application Backend is running');
+});
+
 // Start server and connect to database
 server.listen(PORT, () => {
   console.log(`Server is running on PORT ${PORT}`);
