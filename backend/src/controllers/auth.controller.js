@@ -52,6 +52,7 @@ export const signup = async (req, res) => {
 
 export const login = async (req, res) => {
   const { email, password } = req.body;
+  console.log(email,password)
   try {
     const user = await User.findOne({ email });
     
@@ -64,7 +65,7 @@ export const login = async (req, res) => {
       
       return res.status(400).json({ message: "Invalid credentials" });
     }
-
+    console.log("login successs")
     generateToken(user._id, res);
 
     res.status(200).json({
