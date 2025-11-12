@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { LogOut, MessageSquare, Settings, User } from "lucide-react";
 import { logout } from "../redux/thunks/userThunks";
+import { Users, PlusCircle, MessageSquarePlus } from "lucide-react";
 
 const Navbar = () => {
   const dispatch = useDispatch();
@@ -30,12 +31,32 @@ const Navbar = () => {
               <div className="size-9 rounded-lg bg-primary/10 flex items-center justify-center">
                 <MessageSquare className="w-5 h-5 text-primary" />
               </div>
-              <h1 className="text-lg font-bold">Chatty</h1>
+              <h1 className="text-3xl font-extrabold tracking-wide">
+                <span className="text-red-700 dark:text-red-400">Convo</span>
+                <span className="text-blue-800 dark:text-blue-300">Link</span>
+              </h1>
+
+
+
+
+
             </Link>
           </div>
 
           {/* Right Section */}
           <div className="flex items-center gap-2">
+
+
+
+            <Link
+              to="/settings"
+              className="btn btn-sm gap-2 transition-colors"
+            >
+              <MessageSquarePlus className="w-4 h-4 text-red-700 dark:text-blue-400" />
+              <span className="hidden sm:inline">Create Chat Room</span>
+            </Link>
+
+
             {/* Settings visible for everyone */}
             <Link to="/settings" className="btn btn-sm gap-2 transition-colors">
               <Settings className="w-4 h-4" />
